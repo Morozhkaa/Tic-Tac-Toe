@@ -2,15 +2,27 @@
 from cmath import inf
 
 
+def getOpenCells(board):  # Required for unit-tests
+    open_cells = 0    
+    open_cells += len([1 for i in range(len(board)) for j in range(len(board)) if board[i][j] == ' '])
+    return open_cells
+
+
 class TicTacToe:
-    def __init__(self):
-        size_str = input(" Enter the size of the board (one side):  ")
-        while not size_str.isdigit():
-            size_str = input(" Your input is not correct. To set the field size, enter a single integer:  ")
-        self.size = int(size_str)
+    def __init__(self, board = []):
+        if board:
+            self.board = board
+            self.size = len(board)
+            self.open_cells = getOpenCells(board)
+
+        else:
+            size_str = input(" Enter the size of the board (one side):  ")
+            while not size_str.isdigit():
+                size_str = input(" Your input is not correct. To set the field size, enter a single integer:  ")
+            self.size = int(size_str)
+            self.open_cells = self.size * self.size
+            self.board = self.make_board()
         self.scores = {'X' : 10, 'O' : -10, 'tie': 0}
-        self.open_cells = self.size * self.size
-        self.board = self.make_board()
         self.ai = 'X'
         self.human = 'O'
         self.currentPlayer = self.ai
@@ -105,6 +117,7 @@ class TicTacToe:
         self.board[move[0]][move[1]] = self.ai
         self.open_cells -= 1
         self.currentPlayer = self.human
+        return move
 
 
     def minimax2(self, depth, alpha, beta, isMaximizing):
@@ -145,7 +158,7 @@ class TicTacToe:
                             break
             return bestScore
 
-    # no alpha beta improvements
+    # Currently not in use (no alpha beta improvements)
     def minimax(self, depth, isMaximizing):
         if self.size > 3 and depth == 5:
             return (self.scores["tie"])
@@ -177,7 +190,7 @@ class TicTacToe:
                         bestScore = min(score, bestScore)
 
             return bestScore
-   
+ 
 
     def play(self):
    
