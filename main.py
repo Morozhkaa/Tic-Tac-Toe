@@ -232,18 +232,9 @@ class TicTacToe:
 
 
 
-
 if __name__ == '__main__':
     while True:
         t = TicTacToe()
         t.play()
         if not input('Do you want to play again? (y/n) ').lower().startswith('y'):
             break
-   
-
-
-
-
-
-
-                
