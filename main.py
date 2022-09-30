@@ -1,12 +1,11 @@
-﻿from asyncio.windows_events import NULL
-from cmath import inf
-
+﻿from cmath import inf
 
 def getOpenCells(board):  # Required for unit-tests
-    open_cells = 0    
-    open_cells += len([1 for i in range(len(board)) for j in range(len(board)) if board[i][j] == ' '])
-    return open_cells
-
+    free_cells = 0    
+    for i in range(len(board)):
+        for j in range(len(board)):
+            free_cells += board[i][j] == ' '
+    return free_cells
 
 class TicTacToe:
     def __init__(self, board = []):
@@ -16,9 +15,9 @@ class TicTacToe:
             self.open_cells = getOpenCells(board)
 
         else:
-            size_str = input(" Enter the size of the board (one side):  ")
+            size_str = input("Enter the size of the board (one side): ")
             while not size_str.isdigit():
-                size_str = input(" Your input is not correct. To set the field size, enter a single integer:  ")
+                size_str = input("Your input is not correct. To set the field size, enter a single integer: ")
             self.size = int(size_str)
             self.open_cells = self.size * self.size
             self.board = self.make_board()
@@ -33,13 +32,13 @@ class TicTacToe:
     def print_board(self):
         print('    ', end='')
         for k in range (1, self.size + 1):
-            print('  ', k, ' ', sep='', end='')
+            print(f'  {k} ', end='')
         print('\n    ', end='')
         print('----' * self.size + '-')
         for i in range(self.size):
-            print(' ', i + 1, '  | ', sep = '', end = '')
+            print(f' {i + 1}  | ', end = '')
             for j in range(self.size - 1):
-                print(self.board[i][j], ' | ', sep='', end = '')
+                print(f'{self.board[i][j]} | ', end = '')
             print(self.board[i][self.size - 1], '|')
             print('    ', end = '')
             print('----' * self.size + '-')
@@ -52,54 +51,73 @@ class TicTacToe:
                 return False
         return cur != ' '
 
-    def checkWinner(self):
-        #border = min(self.size, 5)
-        if self.size > 5:
-            for i in range(self.size):
-                for j  in range(self.size):
-                    #horizontal
-                    if j + 4 <= self.size - 1:
-                        arr = [self.board[i][j+k] for k in range(5)]
-                        if self.equals(arr):
-                            return self.board[i][j]
-                    #vertical
-                    if i + 4 <= self.size - 1:
-                        arr = [self.board[i+k][j] for k in range(5)]
-                        if self.equals(arr):
-                            return self.board[i][j]
-                    #diagonal
-                    if i + 4 <= self.size - 1 and j + 4 <= self.size - 1:
-                        arr = [self.board[i+k][j+k] for k in range(5)]
-                        if self.equals(arr):
-                            return self.board[i][j]
-                    if i + 4 <= self.size - 1 and j - 4 >= 0:
-                        arr = [self.board[i+k][j-k] for k in range(5)]
-                        if self.equals(arr):
-                            return self.board[i][j]
-        else:
-            #horizontal
-            for i in range(self.size):
-                arr = [self.board[i][j] for j in range(self.size)]
-                if self.equals(arr):
-                    return self.board[i][0]
-            #vertical
-            for j in range(self.size):
-                arr = [self.board[i][j] for i in range(self.size)]
-                if self.equals(arr):
-                    return self.board[0][j]
-            #diagonal
-            arr = [self.board[i][i] for i in range(self.size)]
-            if self.equals(arr):
-                return self.board[0][0]
-            arr = [self.board[i][self.size - i - 1] for i in range(self.size)]
-            if self.equals(arr):
-                return self.board[0][self.size - 1]
+    def get_winner_small(self):
+        #horizontal
+        for i in range(self.size):
+            row = [self.board[i][j] for j in range(self.size)]
+            if self.equals(row):
+                return self.board[i][0]
 
+        #vertical
+        for j in range(self.size):
+            column = [self.board[i][j] for i in range(self.size)]
+            if self.equals(column):
+                return self.board[0][j]
+
+        #diagonal \
+        diagonal_1 = [self.board[i][i] for i in range(self.size)]
+        if self.equals(diagonal_1):
+            return self.board[0][0]
+
+        #diagonal /
+        diagonal_2 = [self.board[i][self.size - i - 1] for i in range(self.size)]
+        if self.equals(diagonal_2):
+            return self.board[0][self.size - 1]
+
+    def get_winner_large(self):
+        IN_ROW = 4
+        for i in range(self.size):
+            for j  in range(self.size):
+                #horizontal
+                if j + IN_ROW < self.size:
+                    row = [self.board[i][j+k] for k in range(5)]
+                    if self.equals(row):
+                        return self.board[i][j]
+
+                #vertical
+                if i + IN_ROW < self.size:
+                    column = [self.board[i+k][j] for k in range(5)]
+                    if self.equals(column):
+                        return self.board[i][j]
+
+                #diagonal \
+                if i + IN_ROW < self.size and j + IN_ROW < self.size:
+                    diagonal_1 = [self.board[i+k][j+k] for k in range(5)]
+                    if self.equals(diagonal_1):
+                        return self.board[i][j]
+
+                #diagonal /
+                if i + IN_ROW < self.size and j - IN_ROW >= 0:
+                    diagonal_2 = [self.board[i+k][j-k] for k in range(5)]
+                    if self.equals(diagonal_2):
+                        return self.board[i][j]
+
+    def get_winner(self):
+        winner = None
+        if self.size >= 5:
+            winner = self.get_winner_large()
+        else:
+            winner = self.get_winner_small()
+
+        if winner is not None:
+            return winner
+        
         if self.open_cells == 0:
             return "tie"
-        return NULL
 
-    def bestMove(self):
+        return None
+
+    def get_best_move(self):
         bestScore = -inf
         move = [-1, -1]
         for i in range(self.size):
@@ -123,8 +141,8 @@ class TicTacToe:
     def minimax2(self, depth, alpha, beta, isMaximizing):
         if self.size > 3 and depth == 5:
             return (self.scores["tie"])
-        result = self.checkWinner()
-        if result != NULL:
+        result = self.get_winner()
+        if result != None:
             return self.scores[result]
       
         if isMaximizing:
@@ -162,8 +180,8 @@ class TicTacToe:
     def minimax(self, depth, isMaximizing):
         if self.size > 3 and depth == 5:
             return (self.scores["tie"])
-        result = self.checkWinner()
-        if result != NULL:
+        result = self.get_winner()
+        if result != None:
             return self.scores[result]
         if isMaximizing:
             bestScore = -inf
@@ -200,24 +218,26 @@ class TicTacToe:
             self.ai = 'O'
             self.scores = {'O' : 10, 'X' : -10, 'tie': 0}
             self.currentPlayer = self.human
-            print("\n You go first! ")
+            print("\n You go first!")
             t.print_board()
 
         while self.open_cells > 0:
             if self.currentPlayer == self.human:
-                x_str, y_str = input(" Your turn: enter the (x, y) coordinates of the cell:  ").split()
+                x_str, y_str = input("Your turn: enter the (x, y) coordinates of the cell: ").split()
 
                 # Check if the player entered the correct number
-                while (not x_str.isdigit()) or (not y_str.isdigit() or int(x_str) > self.size or int(y_str) > self.size):
-                    if (not x_str.isdigit()) or (not y_str.isdigit()):
-                        x_str, y_str = input(" Input is not correct. Enter integers x, y separated by a space:  ").split()
+                while not (x_str.isdigit() and not y_str.isdigit()) or \
+                    min(x_str, y_str) < 1 or max(x_str, y_str) > self.size:
+                    if not (x_str.isdigit() and not y_str.isdigit()):
+                        x_str, y_str = input("Input is not correct. Enter integers x, y separated by a space: ").split()
                     else:
-                        x_str, y_str = input(" The entered values are out of scope for the board size. Enter integers x, y <= board size:  ").split()
+                        x_str, y_str = input("The entered values are out of scope for the board size. Enter integers x, y <= board size: ").split()
+                
                 x, y = map(int, [x_str, y_str])
 
                 # Сhecking that the cell is free
                 while self.board[x - 1][y - 1] != ' ':
-                     x, y = map(int, input(" This cell is already taken! Try again: enter the (x, y) coordinates of the cell:  ").split())
+                     x, y = map(int, input("This cell is already taken! Try again: enter the (x, y) coordinates of the cell: ").split())
                 self.board[x - 1][y - 1] = self.human
                 self.currentPlayer = self.ai
                 self.open_cells -= 1
@@ -229,18 +249,18 @@ class TicTacToe:
                     self.open_cells -= 1
                     self.print_board()
                     continue
-                self.bestMove()
+                self.get_best_move()
                 
 
             self.print_board()
-            result = self.checkWinner()
+            result = self.get_winner()
             if result == 'tie':
                 print("It's a draw!")
             elif result == self.ai:
                 print("Oh, you lost. Do you want to try again?")
             elif result == self.human:
                 print("Yaay, you won!")
-            if result != NULL:
+            if result != None:
                 return
 
 
