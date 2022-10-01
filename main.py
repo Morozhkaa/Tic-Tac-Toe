@@ -49,27 +49,28 @@ class TicTacToe:
         print()
 
     def checkWinner(self):
+        required_to_win = 5
         #border = min(self.size, 5)
-        if self.size > 5:
+        if self.size > required_to_win:
             for i in range(self.size):
                 for j  in range(self.size):
                     #horizontal
-                    if j + 4 <= self.size - 1:
-                        arr = [self.board[i][j+k] for k in range(5)]
+                    if j + required_to_win <= self.size:
+                        arr = [self.board[i][j+k] for k in range(required_to_win)]
                         if isFilled(arr):
                             return self.board[i][j]
                     #vertical
-                    if i + 4 <= self.size - 1:
-                        arr = [self.board[i+k][j] for k in range(5)]
+                    if i + required_to_win <= self.size:
+                        arr = [self.board[i+k][j] for k in range(required_to_win)]
                         if isFilled(arr):
                             return self.board[i][j]
                     #diagonal
-                    if i + 4 <= self.size - 1 and j + 4 <= self.size - 1:
-                        arr = [self.board[i+k][j+k] for k in range(5)]
+                    if i + required_to_win <= self.size and j + required_to_win <= self.size:
+                        arr = [self.board[i+k][j+k] for k in range(required_to_win)]
                         if isFilled(arr):
                             return self.board[i][j]
-                    if i + 4 <= self.size - 1 and j - 4 >= 0:
-                        arr = [self.board[i+k][j-k] for k in range(5)]
+                    if i + required_to_win <= self.size and j - required_to_win + 1 >= 0:
+                        arr = [self.board[i+k][j-k] for k in range(required_to_win)]
                         if isFilled(arr):
                             return self.board[i][j]
         else:
@@ -103,7 +104,6 @@ class TicTacToe:
                 if self.board[i][j] == ' ':
                     self.board[i][j] = self.ai
                     self.open_cells -= 1
-                    #score = self.minimax(0, False)
                     score = self.minimax2(0, -inf, inf, False)
                     self.board[i][j] = ' '
                     self.open_cells += 1
@@ -153,40 +153,6 @@ class TicTacToe:
                         if beta <= alpha:
                             break
             return bestScore
-
-    # Currently not in use (no alpha beta improvements)
-    def minimax(self, depth, isMaximizing):
-        if self.size > 3 and depth == 5:
-            return (self.scores["tie"])
-        result = self.checkWinner()
-        if result != None:
-            return self.scores[result]
-        if isMaximizing:
-            bestScore = -inf
-            for i in range(self.size):
-                for j in range(self.size):
-                    if self.board[i][j] == ' ':
-                        self.board[i][j] = self.ai
-                        self.open_cells -= 1
-                        score = self.minimax(depth + 1, False)
-                        self.board[i][j] = ' '
-                        self.open_cells += 1
-                        bestScore = max(score, bestScore)
-            return bestScore
-        else:
-            bestScore = inf
-            for i in range(self.size):
-                for j in range(self.size):
-                    if self.board[i][j] == ' ':
-                        self.board[i][j] = self.human
-                        self.open_cells -= 1
-                        score = self.minimax(depth + 1, True)
-                        self.board[i][j] = ' '
-                        self.open_cells += 1
-                        bestScore = min(score, bestScore)
-
-            return bestScore
- 
 
     def play(self):
    

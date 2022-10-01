@@ -1,5 +1,5 @@
 import unittest
-from main import TicTacToe 
+from main import TicTacToe, isFilled
 
 class Test_TicTacToe(unittest.TestCase):
 
